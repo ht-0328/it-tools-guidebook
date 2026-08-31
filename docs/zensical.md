@@ -167,7 +167,7 @@ Build finished in 0.18s
 | 見出しのリンクが `#_1` `#_2` になり、文書内の参照が切れる | 既定の見出し ID の作り方が、日本語の文字を落とす |
 | 全文検索が語で区切られず、日本語で探せない | 語の区切り方が、サイトの言語の設定に従う |
 
-`zensical.toml` に次を書く。**`zensical new .` が作る初期状態には、どちらも入っていない。**
+`zensical.toml` に次を書く。**`zensical new .` が作る初期状態には、どちらも入っていない。** 設定ファイル全体の書き方は [zensical.toml の書き方](zensical-settings.md) にある。
 
 ```toml
 [project.theme]
@@ -250,4 +250,5 @@ MkDocs は Zensical と同じ用途の、先に広まったツールである。
 |---|---|---|
 | ツール一覧 | 他のツールの文書を探す | [ツール一覧](index.md) |
 | 調査の突き合わせ結果 | この文書の数値と判定の根拠をたどる | `research/2026-08-31-zensical/verdict.md` |
+| 設定ファイルの書き方 | `zensical.toml` の各項目が何を変えるかを、画面で確かめながら書く | [zensical.toml の書き方](zensical-settings.md) |
 | Zensical の文書 | 設定項目と命令を確かめる | [Zensical の文書](https://zensical.org/docs/) |

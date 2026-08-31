@@ -18,7 +18,7 @@ site_dir = "site"
 
 nav = [
   { "ツール一覧" = ["index.md"] },
-  { "ツール" = ["zensical.md"] },
+  { "ツール" = ["zensical.md", "zensical-settings.md"] },
 ]
 
 [project.theme]
@@ -30,9 +30,29 @@ features = [
   "content.code.copy",
   "navigation.sections",
   "navigation.top",
+  "navigation.tracking",
   "search.highlight",
+  "search.suggest",
   "toc.follow",
 ]
+
+# 明るい表示と暗い表示を切り替える。既定は閲覧環境の設定に従う。
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "明るい表示に切り替える"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "暗い表示に切り替える"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "閲覧環境の設定に戻す"
 
 # 図を描く mermaid を同梱する。読み込み元は build/zensical/assets/ であり、
 # 中身は tools/vendor/ の写しである。外部への通信を起こさないため CDN からは読まない。
@@ -40,6 +60,8 @@ extra_javascript = ["assets/mermaid.min.js", "assets/mermaid-init.js"]
 
 [project.markdown_extensions]
 admonition = {}
+# ??? で始めると、たたんだ状態の注意書きになる。
+pymdownx.details = {}
 attr_list = {}
 tables = {}
 toc.permalink = true

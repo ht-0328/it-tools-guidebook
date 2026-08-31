@@ -36,7 +36,7 @@
 
 | ツール | 分類 | 何に使うか | 文書 |
 |---|---|---|---|
-| Zensical | 文書 | Markdown から文書サイトを作る | [zensical.md](zensical.md) |
+| Zensical | 文書 | Markdown から文書サイトを作る | [Zensical](zensical.md)、[設定ファイルの書き方](zensical-settings.md) |
 
 ## ツールを1件追加する手順
 

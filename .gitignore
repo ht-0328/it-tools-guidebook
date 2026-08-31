@@ -1,5 +1,6 @@
 # 生成物と OS の一時ファイル
 site/
 build/
+tools/vendor/mermaid.min.js
 .cache/
 .DS_Store

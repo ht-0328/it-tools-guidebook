@@ -15,7 +15,15 @@
 
 **Zensical は、Markdown で書いた文書を、そのまま読めるウェブサイトに変えるツールである。**
 
-書いた `.md` ファイルを置いて命令を1つ実行すると、目次・ページ間の移動・全文検索を備えた HTML の一式ができる。できあがるのは静的なファイルだけである。**データベースもアプリケーションサーバーも要らない。** GitHub Pages のような、ファイルを置くだけの場所で公開できる。
+書いた `.md` ファイルを置いて命令を1つ実行すると、目次・ページ間の移動・全文検索を備えた HTML の一式ができる。
+
+```mermaid
+flowchart LR
+    A["docs/<br>*.md"] --> B["zensical build"] --> C["site/<br>HTML・CSS・JS"]
+    C --> D["GitHub Pages<br>などで公開"]
+```
+
+できあがるのは静的なファイルだけである。**データベースもアプリケーションサーバーも要らない。** GitHub Pages のような、ファイルを置くだけの場所で公開できる。
 
 | | Zensical を使わない場合 | 使う場合 |
 |---|---|---|
@@ -58,19 +66,21 @@
 
 **`Python >=3.10` は、配布物の登録情報と原本の設定ファイルの両方で確かめた値である。** 提供元の導入手順の頁には最低版の記載が無いため、そこだけを見ても分からない。
 
-## 手元で試す手順
+## 自分のリポジトリで使い始める
+
+**この節が主である。** 自分の企画に Zensical を入れる手順を書く。
 
 **開始条件**
 
 - [ ] Python 3.10 以上が入っている
-- [ ] 空のディレクトリを1つ用意している
+- [ ] 文書を置くリポジトリがある
 
 **手順**
 
 1. `python3 -m venv .venv` を実行する
 2. `source .venv/bin/activate` を実行する
 3. `pip install zensical` を実行する
-4. `zensical new .` を実行する
+4. リポジトリの根で `zensical new .` を実行する
 5. `zensical serve` を実行する
 6. ブラウザで `http://localhost:8000` を開く
 
@@ -83,6 +93,8 @@ docs/markdown.md
 zensical.toml
 ```
 
+**手順4は既存のファイルを上書きしない。** `docs/` に文書がすでにあるなら、そのまま読み込まれる。
+
 覚える命令は3つだけである。
 
 | したいこと | 命令 |
@@ -91,18 +103,98 @@ zensical.toml
 | 書きながら表示を確かめる | `zensical serve` |
 | 公開用のファイルを書き出す | `zensical build` |
 
-`zensical build` は `site/` へ書き出す。**`zensical serve` は書いている間に見るためのもので、公開には使わない。** 公開には GitHub Pages や nginx などを使う。
+`zensical build` は `site/` へ書き出す。**`zensical serve` は書いている間に見るためのもので、公開には使わない。**
+
+### 公開まで自動にする
+
+手順4が作る `.github/workflows/docs.yml` が、`main` へ push したときにサイトを作って GitHub Pages へ配る。
+
+```mermaid
+flowchart LR
+    A["Markdown を直す"] --> B["main へ push"]
+    B --> C["GitHub Actions が<br>zensical build"]
+    C --> D["GitHub Pages へ配信"]
+```
+
+**リポジトリの Settings > Pages で、Source を「GitHub Actions」にしておく。** 設定しないと配信で失敗する。
+
+## このリポジトリのサイトを作る
+
+**この節はガイドブック自身の話である。** 自分の企画に入れるだけなら読まなくてよい。
+
+このリポジトリでは Python を手元に入れず、Docker の中で動かす。作業用のイメージを最初に1回だけ作る。
+
+```bash
+docker build -t edocs-zensical -f tools/Dockerfile.zensical tools/
+```
+
+そのうえで作る。
+
+```bash
+bash tools/build_site.sh
+```
+
+**期待される出力**（末尾の3行）
+
+```text
+No issues found
+Build finished in 0.18s
+作った: /home/th/workspace/it-tools-guidebook/site
+```
+
+`tools/build_site.sh` は、`docs/` の外を指すリンクを書き換えた写しを `build/zensical/` に作ってから Zensical を呼ぶ。Zensical は `docs_dir` の中だけをサイトにするためである。
 
 ## 日本語で必要になる2つの設定
 
 **書かないと壊れる。** どちらも 0.0.57 で作った生成物を調べて確かめた。
 
-| 症状 | `zensical.toml` に書く設定 |
+| 症状 | 原因 |
 |---|---|
-| 見出しのリンクが `#_1` `#_2` になり、文書内の参照が切れる | `toc.slugify = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }` |
-| 全文検索が語で区切られず、日本語で探せない | `[project.theme]` の `language = "ja"` |
+| 見出しのリンクが `#_1` `#_2` になり、文書内の参照が切れる | 既定の見出し ID の作り方が、日本語の文字を落とす |
+| 全文検索が語で区切られず、日本語で探せない | 語の区切り方が、サイトの言語の設定に従う |
 
-検索については紛らわしい点がある。提供元のロードマップでは分かち書きが未完了と書かれている。**それでも `language` を `ja` にすれば動く。** 生成物を調べると、検索の索引に `config.lang: ["ja"]` が入り、実装が `Intl.Segmenter` を語単位で使っていた。
+`zensical.toml` に次を書く。**`zensical new .` が作る初期状態には、どちらも入っていない。**
+
+```toml
+[project.theme]
+# 全文検索の語の区切りをここで決める。ja にすると日本語が語ごとに区切られる。
+language = "ja"
+
+[project.markdown_extensions]
+toc.permalink = true
+# 見出しの ID を、見出しの語からそのまま作る。
+# 書かないと _1 _2 のような通し番号になり、#見出し へのリンクが切れる。
+toc.slugify = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }
+```
+
+**書いた前と後で、生成される HTML はこう変わる。**
+
+```html
+<!-- 書く前 -->
+<h2 id="_1">何をするツールか</h2>
+
+<!-- 書いたあと -->
+<h2 id="何をするツールか">何をするツールか</h2>
+```
+
+検索については紛らわしい点がある。提供元のロードマップでは分かち書きが未完了と書かれている。**それでも `language` を `ja` にすれば動く。** 生成物の検索の索引に `config.lang: ["ja"]` が入り、実装が `Intl.Segmenter` を語単位で使っていた。
+
+### 図を描くときに要る設定
+
+`mermaid` の塊を図にするには、さらに2つ要る。**Zensical は塊に印を付けるところまでを行い、描画する部品を同梱しない。**
+
+```toml
+# 描画する部品を読み込む。中身は自分で用意して docs_dir へ置く。
+extra_javascript = ["assets/mermaid.min.js", "assets/mermaid-init.js"]
+
+[project.markdown_extensions]
+# ```mermaid を <pre class="mermaid"> にする。
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+```
+
+このページの図も、この設定で描いている。部品の取得は [tools/build_site.sh](https://github.com/ht-0328/it-tools-guidebook/blob/main/tools/build_site.sh) が行う。
 
 ## MkDocs や Material for MkDocs との関係
 

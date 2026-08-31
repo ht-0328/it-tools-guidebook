@@ -29,6 +29,15 @@ if grep -rn '](\.\./' build/zensical/ ; then
   exit 1
 fi
 
+# 図を描く部品を用意する。無いときだけ取得する。版は 11 系に固定する。
+MERMAID="tools/vendor/mermaid.min.js"
+if [ ! -f "$MERMAID" ]; then
+  echo "mermaid.min.js を取得する"
+  curl -sSL -o "$MERMAID" "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"
+fi
+mkdir -p build/zensical/assets
+cp "$MERMAID" tools/vendor/mermaid-init.js build/zensical/assets/
+
 docker run --rm --user "$(id -u):$(id -g)" \
   -v "$REPO_ROOT:/w" -w /w edocs-zensical zensical build
 

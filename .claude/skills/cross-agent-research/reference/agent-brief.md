@@ -19,12 +19,17 @@
 
 | 観点 | Claude Code | Codex CLI | Antigravity |
 |---|---|---|---|
+| 許す命令の置き場 | `.claude/settings.json` の `permissions` | **`<リポジトリ>/.codex/rules/*.rules`**（Starlark。`.codex/` の層が信頼されているときだけ読む） | 仕様上は `~/.gemini/antigravity-cli/settings.json` だけ。**`tools/agy.sh` が HOME を差し替え、`.agents/antigravity/settings.json` を効かせる** |
 | 常に読む指示書 | `CLAUDE.md`。`AGENTS.md` は読まない | `~/.codex/AGENTS.md` → Git の根 → 下位の順に連結 | `.agents/rules/`。全体は `~/.gemini/GEMINI.md` |
 | 指示書の上限 | 200行未満が目安 | 合計 32 KiB（`project_doc_max_bytes`） | 1ファイル 12,000文字 |
 | スキルの置き場 | `.claude/skills/<名前>/SKILL.md` | `.agents/skills/<名前>/SKILL.md` | `.agents/skills/<名前>/SKILL.md` |
 | `SKILL.md` の必須項目 | `name` と `description` | `name` と `description` | `description` のみ。`name` はフォルダ名が既定 |
 | 明示呼び出しの記号 | `/<名前>` | `$<名前>` | 依頼文の中で名前を挙げる |
 | 手元の版（2026-08-31） | 2.1.233 | codex-cli 0.149.1 | agy 1.1.22 |
+
+**推論の深さを揃えてから投げる。** 揃っていない道具の答えを並べても、差が能力の差なのか偶然なのか分からない。2026-09-01 時点では Claude Code が claude-opus-5、Codex が `-m gpt-5.6-sol -c model_reasoning_effort=high`、Antigravity が `gemini-3.1-pro-high`（`tools/agy.sh` の既定）である。**モデル名は変わる。投げる前に各道具で選べる一覧を確かめる。**
+
+**モデルを上げても数値の誤りは消えない。** 2026-09-01 の調査で、Antigravity は `requires-python` を `>=3.12` と答えた（正しくは `>=3.10`）。**版数と日付は、配布物の登録情報で裏を取る。**
 
 **`.agents/skills/` は Codex と Antigravity が共に読む。** そこへ置いたスキル1本が、2つの道具へ同時に効く。**片方だけが持つ道具の名前を書くと、もう片方で外れる。**
 
@@ -39,12 +44,15 @@
 claude -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
   > research/2026-08-31-docker-compose/pack-claude.md
 
-# Codex。--search で live のウェブ検索を有効にし、最終応答をファイルへ書く
-codex exec --search "$(cat research/2026-08-31-docker-compose/brief.md)" \
-  -o research/2026-08-31-docker-compose/pack-codex.md
+# Codex。--search は exec より前に置く。exec の選択肢ではない
+codex --search exec -m gpt-5.6-sol -c model_reasoning_effort=high -s read-only \
+  -o research/2026-08-31-docker-compose/pack-codex.md \
+  "$(cat research/2026-08-31-docker-compose/brief.md)"
 
-# Antigravity。標準出力をファイルへ落とす
-agy -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
+# Antigravity。agy を直に呼ばず tools/agy.sh を通す。
+# -p は直後の語を依頼文として取るため、他の選択肢は -p より前に置く
+bash tools/agy.sh --sandbox --print-timeout 20m \
+  -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
   > research/2026-08-31-docker-compose/pack-antigravity.md
 ```
 
@@ -61,6 +69,21 @@ agy -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
 **調査だけを頼むときは、書き込みを止めた状態で投げる。** 調べるついでにファイルを直されると、どちらの変更か分からなくなる。
 
 **Codex のウェブ検索は既定で cached である。** 公開直後の資料を当てにするときは `--search` を付けて live にする。
+
+**投げる前に、依頼文を渡さない形で1回試す。** `codex --search exec "say ok"` と `bash tools/agy.sh --sandbox -p "say ok"` が `ok` を返すことを確かめる。引数の並びの誤りは、長い依頼文を投げたあとでは、使ったトークンごと無駄になる。
+
+**Antigravity の print モードは既定 5 分で打ち切る。** 調査は5分では終わらない。`--print-timeout 20m` を付ける。付けないと、**途中まで書けた出力だけが返り、標準エラーに `timeout waiting for response` が出る。** 途中で切れた出力は調査パックとして数えない。
+
+**許可の設定は、このファイルではなく、それが効く場所にある。**
+
+| 道具 | 許可の正本 | 止まったときに見るもの |
+|---|---|---|
+| Antigravity | `.agents/antigravity/settings.json`（`tools/agy.sh` が読ませる） | `bash tools/agy.sh --why-denied` が、拒否された種別と要求された対象を出す |
+| Codex | `.codex/rules/default.rules` | `codex execpolicy check --pretty --rules .codex/rules/default.rules -- <命令>` |
+
+**大域の `~/.gemini/antigravity-cli/settings.json` は書き換えない。** ユーザーの持ち物であり、他の企画にも影響する。
+
+**許可を足す前に、依頼文の側で避けられないかを先に考える。** 「開いてよい情報源」と「実行できる命令の制限」の2節がそのためにある。
 
 ## 依頼文の型
 
@@ -83,6 +106,18 @@ agy -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
 - 本文へ到達できなかった資料は「未閲覧」と書いて残す。消さない
 - 資料が食い違うときは、平均して1つの事実にしない。両方を残す
 
+## 開いてよい情報源
+次のドメインだけを開く。**ここに無いドメインは開かず、台帳へ「未閲覧」と記す。**
+
+- （例: `zensical.org` 提供元の文書）
+- （例: `github.com` と `raw.githubusercontent.com` 原本と公開記録）
+- （例: `pypi.org` 配布物の登録情報）
+
+## 実行できる命令の制限
+- シェルで実行できるのは読み取りだけの命令である。`cat`、`head`、`tail`、`ls`、`rg`、`find` は使える
+- `python3 -c` は許可されていない。取得したページの本文は、命令を挟まずそのまま読んで判断する
+- 許可されていない命令を実行しようとすると、その場で止まり、出力が空のまま終わる
+
 ## 出力の形式
 次の4つの節をこの順に置く。節を増やさない。
 
@@ -103,6 +138,10 @@ agy -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
 - 事実と推論を混ぜない。推論には「推論」と書く
 - ファイルを作成・変更しない。出力は標準出力だけにする
 ````
+
+**「開いてよい情報源」と「実行できる命令の制限」の2節を削らない。** 道具ごとに許可の一覧が違う。何を使ってよいかを本文で伝えないと、許可の無い対象で止まる。
+
+**ドメインを1件ずつ許可リストへ足して追いかけない。** 調べる道具は検索結果からドメインを選ぶため、足しても次に別のドメインを選ぶ。**依頼文で開ける先を挙げるほうが早く収束し、道具どうしの結果もそろう。**
 
 **`## 禁止事項` を削らない。** ここを外すと、道具によっては調査のついでにファイルを書き換える。
 
@@ -145,3 +184,6 @@ agy -p "$(cat research/2026-08-31-docker-compose/brief.md)" \
 | 道具ごとに問いの言い回しを変える | 食い違いの原因を切り分けられない | 本文を1本にして使い回す |
 | 書き込みを止めずに投げる | 調査のついでに作業場のファイルが変わる | 表の「書き込みを止める」の選択肢を付ける |
 | Codex を既定のまま投げる | ウェブ検索が cached のため、公開直後の資料に当たらない | `--search` を付けて live にする |
+| `codex exec --search` と書く | `--search` は `exec` の選択肢ではない。使い方の表示だけ出て終わる | `codex --search exec` の順にする |
+| `agy -p` の後ろに他の選択肢を置く | `-p` が次の語を依頼文として取り、本来の依頼文が無視される | 他の選択肢を `-p` より前に置く |
+| 依頼文で命令の実行を促す | Antigravity は許可の無い命令で止まり、出力が空になる | 依頼文へ「実行できる命令の制限」の節を入れ、取得した本文をそのまま読ませる |

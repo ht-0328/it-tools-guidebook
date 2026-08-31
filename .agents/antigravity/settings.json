@@ -1,0 +1,62 @@
+{
+  "_comment": [
+    "このリポジトリで Antigravity に許す操作。正本はこのファイルである。",
+    "bash tools/agy.sh 経由で起動したときだけ効く。~/.gemini の大域設定は書き換えない。",
+    "{{REPO_ROOT}} は tools/agy.sh が写すときにリポジトリの絶対経路へ置き換える。",
+    "書き方は 動作(対象) で、空白で区切った語ごとに先頭固定の正規表現として扱われる。",
+    "判定は deny > ask > allow の順で、一覧に無い操作は headless では自動拒否され、出力が空のまま終わる。",
+    "実測で確かめた落とし穴が3つある。",
+    "1. trustedWorkspaces を書かないと read_file の許可が効かず、リポジトリ内のファイルも読めない。",
+    "2. write_file は deny に書かないと許可判定を素通りする。write_file(/) で全面的に止めている。",
+    "3. google_search の結果は vertexaisearch.cloud.google.com へ転送される。",
+    "   ここを許可しないと、検索はできても本文を1件も開けない。",
+    "4. --sandbox を付けて起動するため、サンドボックスの外での実行を求めることがある。unsandboxed(*) で禁じている。",
+    "止まったときは bash tools/agy.sh --why-denied で要求された対象を調べる。"
+  ],
+  "permissions": {
+    "allow": [
+      "read_file({{REPO_ROOT}})",
+      "read_url(https://vertexaisearch.cloud.google.com)",
+      "read_url(https://github.com)",
+      "read_url(https://raw.githubusercontent.com)",
+      "read_url(https://pypi.org)",
+      "read_url(https://zenn.dev)",
+      "read_url(https://zensical.org)",
+      "read_url(https://squidfunk.github.io)",
+      "command(pwd)",
+      "command(stat)",
+      "command(file)",
+      "command(readlink)",
+      "command(realpath)",
+      "command(sed -n)",
+      "command(cat)",
+      "command(head)",
+      "command(tail)",
+      "command(wc)",
+      "command(fold)",
+      "command(cut)",
+      "command(nl)",
+      "command(ls)",
+      "command(find)",
+      "command(rg)",
+      "command(git status)",
+      "command(git diff)",
+      "command(git log)",
+      "command(bash tools/doclint.sh)"
+    ],
+    "deny": [
+      "unsandboxed(*)",
+      "write_file(/)",
+      "command(git push)",
+      "command(git clean)",
+      "command(git reset --hard)",
+      "command(git rebase)",
+      "command(git filter-branch)",
+      "command(python3 -c)",
+      "command(rm)"
+    ]
+  },
+  "trustedWorkspaces": [
+    "{{REPO_ROOT}}"
+  ]
+}

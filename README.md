@@ -10,6 +10,10 @@
 | 想定読者（宛先） | システム開発でツールを選ぶ人。選ばれたツールを初めて使う人 |
 | この文書を読んだあと読者ができること | 目的のツールの説明文書を見つけられる。新しいツールの説明文書を、決められた型で書ける |
 
+**公開先: <https://ht-0328.github.io/it-tools-guidebook/>**
+
+読むだけなら、上の公開先を開く。書き足すときだけ、このリポジトリを取得する。
+
 ## 何をするものか
 
 **システム開発で使うツールを、1ツール1文書で説明するリポジトリである。**
@@ -97,9 +101,7 @@ error: 0  warning: 0  info: 0
 
 ## サイトを作って見る
 
-**公開先**: [システム開発ツール ガイドブック](https://ht-0328.github.io/it-tools-guidebook/)
-
-`docs/` の Markdown から [Zensical](docs/zensical.md) でサイトを作る。ホストには何も入れない。作業用のイメージを、最初に1回だけ作る。
+公開先へ出す前に、手元で表示を確かめる。`docs/` の Markdown から [Zensical](docs/zensical.md) でサイトを作る。ホストには何も入れない。作業用のイメージを、最初に1回だけ作る。
 
 ```bash
 docker build -t edocs-zensical -f tools/Dockerfile.zensical tools/

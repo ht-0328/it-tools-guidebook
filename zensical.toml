@@ -34,6 +34,10 @@ features = [
   "toc.follow",
 ]
 
+# 図を描く mermaid を同梱する。読み込み元は build/zensical/assets/ であり、
+# 中身は tools/vendor/ の写しである。外部への通信を起こさないため CDN からは読まない。
+extra_javascript = ["assets/mermaid.min.js", "assets/mermaid-init.js"]
+
 [project.markdown_extensions]
 admonition = {}
 attr_list = {}
@@ -42,3 +46,8 @@ toc.permalink = true
 # 日本語の見出しのアンカーは、既定では _1 _2 のような通し番号になる。
 # 0.0.57 で実測して確かめた。見出しの語をそのまま使う slugify を指定して直す。
 toc.slugify = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }
+
+# ```mermaid を <pre class="mermaid"> にする。描画は mermaid-init.js が行う。
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]

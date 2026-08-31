@@ -84,13 +84,27 @@ flowchart LR
 5. `zensical serve` を実行する
 6. ブラウザで `http://localhost:8000` を開く
 
-**成功したとき**: 手順4で次の4つが作られる。手順6でサイトが表示され、`docs/index.md` を直して保存すると、ブラウザの表示が入れ替わる。
+**成功したとき**: 手順4でリポジトリの根に次の4つが作られる。
 
 ```text
-.github/workflows/docs.yml
-docs/index.md
-docs/markdown.md
-zensical.toml
+リポジトリの根/
+├─ zensical.toml            サイトの設定。名前と公開先の URL をここで決める
+├─ docs/
+│  ├─ index.md              トップページ。ここから書き換える
+│  └─ markdown.md           書き方の見本。消してよい
+└─ .github/
+   └─ workflows/
+      └─ docs.yml           push したときに公開する仕組み
+```
+
+手順6でサイトが表示され、`docs/index.md` を直して保存すると、ブラウザの表示が入れ替わる。
+
+**最初に `zensical.toml` の2行を書き換える。** 作られた直後は仮の値が入っている。
+
+```toml
+[project]
+site_url = "https://www.example.com/"   # 公開先の URL に変える
+site_name = "Documentation"             # サイトの名前に変える
 ```
 
 **手順4は既存のファイルを上書きしない。** `docs/` に文書がすでにあるなら、そのまま読み込まれる。

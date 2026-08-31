@@ -19,8 +19,9 @@
 
 ```mermaid
 flowchart LR
-    A["docs/<br>*.md"] --> B["zensical build"] --> C["site/<br>HTML・CSS・JS"]
-    C --> D["GitHub Pages<br>などで公開"]
+    A["docs/ の Markdown"] --> B["zensical build"]
+    B --> C["site/ の HTML と CSS"]
+    C --> D["GitHub Pages で公開"]
 ```
 
 できあがるのは静的なファイルだけである。**データベースもアプリケーションサーバーも要らない。** GitHub Pages のような、ファイルを置くだけの場所で公開できる。
@@ -126,8 +127,8 @@ site_name = "Documentation"             # サイトの名前に変える
 ```mermaid
 flowchart LR
     A["Markdown を直す"] --> B["main へ push"]
-    B --> C["GitHub Actions が<br>zensical build"]
-    C --> D["GitHub Pages へ配信"]
+    B --> C["GitHub Actions が実行する"]
+    C --> D["GitHub Pages へ配信する"]
 ```
 
 **リポジトリの Settings > Pages で、Source を「GitHub Actions」にしておく。** 設定しないと配信で失敗する。

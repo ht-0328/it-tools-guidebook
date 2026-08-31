@@ -207,8 +207,8 @@ pymdownx.superfences.custom_fences = [
 
 ```mermaid
 flowchart LR
-    A["```mermaid の塊"] --> B["pymdownx.superfences<br>で印を付ける"]
-    B --> C["mermaid.min.js<br>が図にする"]
+    A["mermaid の塊"] --> B["superfences が印を付ける"]
+    B --> C["mermaid.min.js が図にする"]
 ```
 
 ## 読み込む場所と書き出す場所を決める

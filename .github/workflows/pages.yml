@@ -1,0 +1,66 @@
+# docs/ の Markdown から Zensical でサイトを作り、GitHub Pages で公開する。
+#
+# 公開先: https://ht-0328.github.io/it-tools-guidebook/
+#
+# 手順は README「サイトを作って見る」と同じものをなぞる。依存の版を1箇所に持たせたいため、
+# CI でも tools/Dockerfile.zensical のイメージを使う。ここに pip install を並べると、
+# 同じ一覧が2箇所に分かれて、いずれ食い違う。
+#
+# この workflow を動かす前に、リポジトリの Settings > Pages で
+# Source を「GitHub Actions」にしておく。設定しないと最後の配信で失敗する。
+
+name: サイトを公開する
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開は一度に一つだけ動かす。走っているものは止めずに待つ。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: サイトを作る
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取得する
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: 検査用のイメージを作る
+        run: docker build -t edocs-tools -f standards/engineering-docs-standard/tools/Dockerfile standards/engineering-docs-standard/tools/
+
+      - name: 文書を検査する
+        run: bash tools/doclint.sh
+
+      - name: Zensical のイメージを作る
+        run: docker build -t edocs-zensical -f tools/Dockerfile.zensical tools/
+
+      - name: サイトを作る
+        run: bash tools/build_site.sh
+
+      - name: 成果物を渡す
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: 公開する
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages へ配信する
+        id: deployment
+        uses: actions/deploy-pages@v4

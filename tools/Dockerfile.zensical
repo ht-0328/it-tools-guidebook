@@ -1,0 +1,12 @@
+# Zensical でサイトを作るための作業用イメージ。
+#
+#   docker build -t edocs-zensical -f tools/Dockerfile.zensical tools/
+#
+# 版を固定する。Zensical は 2026-09-01 時点で Alpha であり、
+# 固定しないと更新のたびに表示や設定の解釈が変わる。
+FROM python:3.12-slim
+
+# Python の要求は >=3.10 である。ここでは 3.12 を使う。
+RUN pip install --no-cache-dir zensical==0.0.57
+
+WORKDIR /w

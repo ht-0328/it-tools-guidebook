@@ -1,0 +1,44 @@
+# Zensical でこのリポジトリのサイトを作る設定。
+#
+#   bash tools/build_site.sh
+#
+# docs_dir が docs/ ではないことに注意する。Zensical は docs_dir の中だけをサイトにする。
+# docs/ には ../templates/ や ../standards/ を指すリンクがあるため、
+# 書き換えた写しを build/zensical/ に作ってから読ませる。写しは tools/build_site.sh が作る。
+
+[project]
+site_name = "システム開発ツール ガイドブック"
+site_description = "システム開発で使うツールを、1ツール1文書で説明する"
+site_url = "https://ht-0328.github.io/it-tools-guidebook/"
+repo_url = "https://github.com/ht-0328/it-tools-guidebook"
+repo_name = "ht-0328/it-tools-guidebook"
+
+docs_dir = "build/zensical"
+site_dir = "site"
+
+nav = [
+  { "ツール一覧" = ["index.md"] },
+  { "ツール" = ["zensical.md"] },
+]
+
+[project.theme]
+# 日本語にする。全文検索の分かち書きは site language に従うため、ここを ja にする。
+language = "ja"
+# 書体を外部から読み込まない。生成したサイトから外部への通信を起こさないためである。
+font = false
+features = [
+  "content.code.copy",
+  "navigation.sections",
+  "navigation.top",
+  "search.highlight",
+  "toc.follow",
+]
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+tables = {}
+toc.permalink = true
+# 日本語の見出しのアンカーは、既定では _1 _2 のような通し番号になる。
+# 0.0.57 で実測して確かめた。見出しの語をそのまま使う slugify を指定して直す。
+toc.slugify = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }

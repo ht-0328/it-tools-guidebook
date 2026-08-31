@@ -101,8 +101,12 @@ error: 0  warning: 0  info: 0
 docs/                 ツール1件ごとの説明文書
 docs/index.md         収録しているツールの一覧
 templates/            このリポジトリ用のテンプレート
+research/             調査で集めた出典と突き合わせ結果（検査の対象外）
 standards/            ドキュメント標準（サブモジュール。編集しない）
 tools/                検査を実行するスクリプト
+.claude/skills/       Claude Code のスキル
+.agents/skills/       Codex と Antigravity のスキル
+.agents/rules/        Antigravity へ AGENTS.md を届ける規則
 AGENTS.md             AIエージェント向けの指示書（指示の正本）
 CLAUDE.md             AGENTS.md を取り込むだけのファイル
 ```

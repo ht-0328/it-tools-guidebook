@@ -42,6 +42,9 @@ docker build -t edocs-tools -f standards/engineering-docs-standard/tools/Dockerf
 | Claude Code のスキル | `.claude/skills/` |
 | Codex と Antigravity のスキル | `.agents/skills/` |
 | Antigravity へ AGENTS.md を届ける規則 | `.agents/rules/` |
+| Codex に許す命令 | `.codex/rules/` |
+| Antigravity に許す操作 | `.agents/antigravity/settings.json` |
+| サイトの設定と組み立て | `zensical.toml` と `tools/build_site.sh` |
 
 ## 文書の決まり
 

@@ -95,15 +95,47 @@ error: 0  warning: 0  info: 0
 
 **検査を通ったことは品質の証明ではない。** 読者に合っているか、事実が正しいかは機械では判定できない。
 
+## サイトを作って見る
+
+**公開先**: [システム開発ツール ガイドブック](https://ht-0328.github.io/it-tools-guidebook/)
+
+`docs/` の Markdown から [Zensical](docs/zensical.md) でサイトを作る。ホストには何も入れない。作業用のイメージを、最初に1回だけ作る。
+
+```bash
+docker build -t edocs-zensical -f tools/Dockerfile.zensical tools/
+```
+
+そのうえで作る。
+
+```bash
+bash tools/build_site.sh
+```
+
+**期待される出力**（末尾の3行）
+
+```text
+No issues found
+Build finished in 0.18s
+作った: /home/th/workspace/it-tools-guidebook/site
+```
+
+生成物は `site/` に出る。`site/` と `build/` は版管理の対象外である。
+
+**`main` へ入ると [GitHub Actions](.github/workflows/pages.yml) が同じ手順で作り、公開する。** 公開の前に文書の検査も走る。**リポジトリの Settings > Pages で Source を「GitHub Actions」にしておく。** 設定しないと配信で失敗する。
+
 ## フォルダ構成
 
 ```text
 docs/                 ツール1件ごとの説明文書
 docs/index.md         収録しているツールの一覧
 templates/            このリポジトリ用のテンプレート
+zensical.toml         サイトの設定（Zensical）
 research/             調査で集めた出典と突き合わせ結果（検査の対象外）
 standards/            ドキュメント標準（サブモジュール。編集しない）
 tools/                検査を実行するスクリプト
+.codex/rules/         Codex に許す命令（リポジトリ側に置ける）
+.agents/antigravity/  Antigravity に許す操作。tools/agy.sh 経由でのみ効く
+.github/workflows/    サイトを作って公開する仕組み
 .claude/skills/       Claude Code のスキル
 .agents/skills/       Codex と Antigravity のスキル
 .agents/rules/        Antigravity へ AGENTS.md を届ける規則

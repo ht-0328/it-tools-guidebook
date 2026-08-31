@@ -38,6 +38,10 @@ docker build -t edocs-tools -f standards/engineering-docs-standard/tools/Dockerf
 | 収録しているツールの一覧 | `docs/index.md` |
 | このリポジトリ用のテンプレート | `templates/` |
 | 検査を実行するスクリプト | `tools/` |
+| 調査で集めた出典と突き合わせ結果 | `research/<日付>-<テーマ>/` |
+| Claude Code のスキル | `.claude/skills/` |
+| Codex と Antigravity のスキル | `.agents/skills/` |
+| Antigravity へ AGENTS.md を届ける規則 | `.agents/rules/` |
 
 ## 文書の決まり
 
